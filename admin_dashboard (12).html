@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TildaBite Admin Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f5;--surface:#fff;--card:#fffdf9;--border:#ede9e0;--border2:#d8d2c4;
+  --text:#1a1208;--text2:#6b5e45;--text3:#b0a48a;
+  --accent:#f07c1a;--accent2:#ff9c3a;--abg:rgba(240,124,26,0.08);--aborder:rgba(240,124,26,0.25);
+  --green:#16a34a;--gbg:rgba(22,163,74,0.09);--gborder:rgba(22,163,74,0.3);
+  --blue:#2563eb;--bbg:rgba(37,99,235,0.09);--bborder:rgba(37,99,235,0.3);
+  --amber:#b45309;--ambg:rgba(180,83,9,0.09);--amborder:rgba(180,83,9,0.3);
+  --red:#dc2626;--rbg:rgba(220,38,38,0.09);--rborder:rgba(220,38,38,0.3);
+  --radius:9px;
+}
+body.dark{
+  --bg:#0f0f0f;--surface:#1a1a1a;--card:#222;--border:#2e2e2e;--border2:#3a3a3a;
+  --text:#f0f0f0;--text2:#aaa;--text3:#555;
+  --accent:#ff6b35;--accent2:#ff8c55;--abg:rgba(255,107,53,0.12);--aborder:rgba(255,107,53,0.35);
+  --green:#22c55e;--gbg:rgba(34,197,94,0.1);--gborder:rgba(34,197,94,0.3);
+  --blue:#3b82f6;--bbg:rgba(59,130,246,0.1);--bborder:rgba(59,130,246,0.3);
+  --amber:#f59e0b;--ambg:rgba(245,158,11,0.1);--amborder:rgba(245,158,11,0.3);
+  --red:#ef4444;--rbg:rgba(239,68,68,0.1);--rborder:rgba(239,68,68,0.3);
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:230px;flex-shrink:0;background:var(--surface);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:0}
+.sidebar-logo{padding:18px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-logo img{height:38px;width:38px;object-fit:contain;border-radius:8px}
+.sidebar-logo-text .brand{font-size:16px;font-weight:800;color:var(--accent);letter-spacing:-0.3px}
+.sidebar-logo-text .sub{font-size:11px;color:var(--text3);font-weight:500}
+.sidebar-nav{padding:12px 10px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:17px;width:20px}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--abg);color:var(--accent);border:1px solid var(--aborder)}
+.nav-item .badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.sidebar-footer{padding:14px 10px;border-top:1.5px solid var(--border)}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:16px;font-weight:800}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-btn{background:none;border:1px solid var(--border2);color:var(--text2);padding:6px 12px;border-radius:var(--radius);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;transition:all 0.15s}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tb-btn.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.view{display:none}
+.view.active{display:block}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(180,120,30,0.06)}
+.stat-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.stat-val{font-size:26px;font-weight:800;margin-bottom:2px}
+.stat-sub{font-size:11px;color:var(--text3)}
+.stat-card.s-orange .stat-val{color:var(--accent)}
+.stat-card.s-green .stat-val{color:var(--green)}
+.stat-card.s-blue .stat-val{color:var(--blue)}
+.stat-card.s-amber .stat-val{color:var(--amber)}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-head h2{font-size:14px;font-weight:700}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.15s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--abg)}
+
+.orders-table{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
+.table-head{display:grid;grid-template-columns:100px 1fr 90px 100px 110px 120px;gap:0;background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.table-row{display:grid;grid-template-columns:100px 1fr 90px 100px 110px 120px;gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background 0.15s}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:var(--card)}
+.table-cell{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px}
+.order-id-cell{font-weight:700;color:var(--accent);font-size:12px}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.s-pending{background:var(--ambg);color:var(--amber);border:1px solid var(--amborder)}
+.s-otw{background:var(--bbg);color:var(--blue);border:1px solid var(--bborder)}
+.s-delivered{background:var(--gbg);color:var(--green);border:1px solid var(--gborder)}
+.s-cancelled{background:var(--rbg);color:var(--red);border:1px solid var(--rborder)}
+.assign-btn{background:var(--bbg);color:var(--blue);border:1px solid var(--bborder);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.15s}
+.assign-btn:hover{background:var(--blue);color:#fff}
+.assigned-pill{background:var(--gbg);color:var(--green);border:1px solid var(--gborder);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal-bg.hidden{display:none}
+.modal{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+.modal h3{font-size:15px;font-weight:800;margin-bottom:4px}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:18px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.modal-field select,.modal-field input{width:100%;background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:var(--radius);font-size:13px;outline:none}
+.modal-field select:focus,.modal-field input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.btn-cancel{background:none;border:1px solid var(--border2);color:var(--text2);padding:8px 16px;border-radius:var(--radius);cursor:pointer;font-size:13px}
+.btn-confirm{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:700}
+
+.riders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rider-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(180,120,30,0.06)}
+.rider-avatar{width:44px;height:44px;border-radius:50%;background:var(--bbg);border:2px solid var(--bborder);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--blue);margin-bottom:10px}
+.rider-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.rider-phone{font-size:12px;color:var(--text2);margin-bottom:10px}
+.rider-stats{display:flex;gap:10px;margin-bottom:12px}
+.r-stat{flex:1;text-align:center;background:var(--card);border-radius:8px;padding:6px}
+.r-stat-val{font-size:16px;font-weight:800;color:var(--accent)}
+.r-stat-label{font-size:10px;color:var(--text3)}
+.rider-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.r-available{background:var(--gbg);color:var(--green);border:1px solid var(--gborder)}
+.r-busy{background:var(--ambg);color:var(--amber);border:1px solid var(--amborder)}
+.r-offline{background:var(--card);color:var(--text3);border:1px solid var(--border)}
+
+.notif-form{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:20px;max-width:520px}
+.notif-form h3{font-size:14px;font-weight:700;margin-bottom:16px}
+.nf-field{margin-bottom:14px}
+.nf-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.nf-field select,.nf-field input,.nf-field textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:var(--radius);font-size:13px;outline:none;font-family:inherit}
+.nf-field textarea{min-height:80px;resize:vertical}
+.nf-field select:focus,.nf-field input:focus,.nf-field textarea:focus{border-color:var(--accent)}
+.send-btn{background:var(--accent);color:#fff;border:none;padding:10px 20px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.notif-log{margin-top:20px}
+.notif-item{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.notif-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ni-order{background:var(--bbg);color:var(--blue)}
+.ni-promo{background:var(--abg);color:var(--accent)}
+.ni-alert{background:var(--ambg);color:var(--amber)}
+.notif-content h4{font-size:13px;font-weight:600;margin-bottom:2px}
+.notif-content p{font-size:12px;color:var(--text2)}
+.notif-meta{margin-left:auto;font-size:11px;color:var(--text3);white-space:nowrap}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1.5px solid var(--accent);color:var(--text);padding:10px 18px;border-radius:30px;font-size:13px;font-weight:600;z-index:999;opacity:0;transform:translateY(12px);transition:all 0.25s;display:flex;align-items:center;gap:8px;pointer-events:none;box-shadow:0 4px 20px rgba(240,124,26,0.15)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast i{color:var(--accent)}
+</style>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="tmsg"></span></div>
+
+<!-- ADMIN LOGIN SCREEN -->
+<div id="admin-login-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff8f0,#fff3e5)">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(180,120,30,0.12)">
+    <div style="text-align:center;margin-bottom:28px">
+      <img src="logo.png" alt="TildaBite" style="height:64px;width:64px;border-radius:14px;margin-bottom:10px">
+      <div style="font-size:24px;font-weight:900;color:var(--accent);letter-spacing:-0.5px">TildaBite</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px;font-weight:500">Admin Portal · Restricted Access 🔒</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px">Admin ID</label>
+      <input type="email" id="admin-id-input" placeholder="admin@tildabite.com" style="width:100%;background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:var(--radius);font-size:14px;outline:none" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px">Password</label>
+      <input type="password" id="admin-pass-input" placeholder="••••••••" style="width:100%;background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:var(--radius);font-size:14px;outline:none" onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div id="admin-login-error" style="display:none;background:var(--rbg);border:1px solid var(--rborder);color:var(--red);padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+    <button onclick="adminLogin()" style="width:100%;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(240,124,26,0.25)">Sign in to Admin Panel</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text3)">Default: admin@tildabite.com / Admin@1234</div>
+  </div>
+</div>
+
+<div class="shell" id="admin-shell" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.png" alt="TildaBite">
+      <div class="sidebar-logo-text">
+        <div class="brand">TildaBite</div>
+        <div class="sub">Admin Panel</div>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="showView('overview',this)"><i class="ti ti-layout-dashboard"></i>Overview</button>
+      <button class="nav-item" onclick="showView('orders',this)"><i class="ti ti-package"></i>Orders <span class="badge" id="pending-badge">0</span></button>
+      <button class="nav-item" onclick="showView('riders',this)"><i class="ti ti-motorbike"></i>Riders</button>
+      <button class="nav-item" onclick="showView('notifications',this)"><i class="ti ti-bell"></i>Notifications</button>
+      <button class="nav-item" onclick="showView('menu-mgmt',this)"><i class="ti ti-clipboard-list"></i>Menu</button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="toggleTheme()"><i class="ti ti-moon" id="theme-icon"></i>Toggle theme</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Overview</div>
+      <div class="topbar-right">
+        <button class="tb-btn" onclick="adminRefreshOrders()"><i class="ti ti-refresh" style="font-size:14px"></i> Refresh</button>
+        <button class="tb-btn accent"><i class="ti ti-user-circle" style="font-size:14px"></i> Admin</button>
+        <button class="tb-btn" onclick="adminSignOut()" style="border-color:var(--red);color:var(--red)"><i class="ti ti-logout" style="font-size:14px"></i> Sign out</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div class="view active" id="view-overview">
+        <div class="stat-grid">
+          <div class="stat-card s-orange"><div class="stat-label">Total orders today</div><div class="stat-val" id="ov-total">0</div><div class="stat-sub" id="ov-total-sub">No orders yet</div></div>
+          <div class="stat-card s-green"><div class="stat-label">Revenue today</div><div class="stat-val" id="ov-revenue">₹0</div><div class="stat-sub">—</div></div>
+          <div class="stat-card s-blue"><div class="stat-label">Active riders</div><div class="stat-val" id="ov-riders">0</div><div class="stat-sub">—</div></div>
+          <div class="stat-card s-amber"><div class="stat-label">Pending orders</div><div class="stat-val" id="ov-pending">0</div><div class="stat-sub">Need rider assignment</div></div>
+        </div>
+        <div class="section-head"><h2>Recent orders</h2><button class="filter-btn" onclick="showView('orders',document.querySelectorAll('.nav-item')[1])">View all</button></div>
+        <div class="orders-table">
+          <div class="table-head"><div>Order ID</div><div>Customer</div><div>Amount</div><div>Status</div><div>Rider</div><div>Action</div></div>
+          <div id="recent-orders-body"></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="view" id="view-orders">
+        <div class="filter-row" id="order-filters">
+          <button class="filter-btn active" onclick="filterOrders('all',this)">All orders</button>
+          <button class="filter-btn" onclick="filterOrders('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="filterOrders('otw',this)">Out for delivery</button>
+          <button class="filter-btn" onclick="filterOrders('delivered',this)">Delivered</button>
+        </div>
+        <div class="orders-table">
+          <div class="table-head"><div>Order ID</div><div>Customer</div><div>Amount</div><div>Status</div><div>Rider</div><div>Action</div></div>
+          <div id="all-orders-body"></div>
+        </div>
+        <div class="modal-bg hidden" id="assign-modal">
+          <div class="modal">
+            <h3>Assign rider</h3>
+            <p id="modal-order-label">Assigning for TB1001</p>
+            <div class="modal-field"><label>Select rider</label>
+              <select id="rider-select"><option value="">Choose a rider...</option></select>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+              <button class="btn-confirm" onclick="confirmAssign()">Assign & generate OTP</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIDERS -->
+      <div class="view" id="view-riders">
+        <div class="riders-grid" id="riders-grid"></div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="view" id="view-notifications">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+          <div class="notif-form">
+            <h3><i class="ti ti-send" style="color:var(--accent);margin-right:6px"></i>Send notification</h3>
+            <div class="nf-field"><label>Target audience</label>
+              <select id="notif-target">
+                <option>All customers</option><option>Specific order customer</option>
+                <option>All riders</option><option>Customers with pending orders</option>
+              </select>
+            </div>
+            <div class="nf-field"><label>Notification type</label>
+              <select id="notif-type">
+                <option>Order update</option><option>Promotional offer</option>
+                <option>OTP delivery</option><option>System alert</option>
+              </select>
+            </div>
+            <div class="nf-field"><label>Title</label><input type="text" id="notif-title" placeholder="Your order is on the way!"></div>
+            <div class="nf-field"><label>Message</label><textarea id="notif-msg" placeholder="Enter notification message..."></textarea></div>
+            <button class="send-btn" onclick="sendNotification()"><i class="ti ti-send" style="font-size:14px"></i>Send notification</button>
+          </div>
+          <div>
+            <div class="section-head" style="margin-bottom:12px"><h2>Notification log</h2></div>
+            <div class="notif-log" id="notif-log"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU MGMT -->
+      <div class="view" id="view-menu-mgmt">
+        <div class="stat-grid" style="margin-bottom:16px">
+          <div class="stat-card s-orange"><div class="stat-label">Total items</div><div class="stat-val" id="mm-total">0</div><div class="stat-sub">In menu</div></div>
+          <div class="stat-card s-green"><div class="stat-label">In stock</div><div class="stat-val" id="mm-instock">0</div><div class="stat-sub">Available now</div></div>
+          <div class="stat-card s-amber"><div class="stat-label">Few left</div><div class="stat-val" id="mm-fewleft">0</div><div class="stat-sub">≤ 5 units</div></div>
+          <div class="stat-card s-blue"><div class="stat-label">Out of stock</div><div class="stat-val" id="mm-oos">0</div><div class="stat-sub">Hidden from menu</div></div>
+        </div>
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:14px;font-weight:800">TildaBite Menu Items</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="mm-search" placeholder="Search items…" oninput="renderMenuMgmt()" style="background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:6px 12px;border-radius:8px;font-size:12px;outline:none;width:180px">
+              <button class="tb-btn accent" onclick="openMenuEditor(null)"><i class="ti ti-plus" style="font-size:13px"></i> Add item</button>
+            </div>
+          </div>
+          <div id="menu-items-list"></div>
+        </div>
+
+        <!-- MENU EDIT MODAL -->
+        <div class="modal-bg hidden" id="menu-modal">
+          <div class="modal" style="max-width:460px;max-height:90vh;overflow-y:auto">
+            <h3 id="menu-modal-title">Add menu item</h3>
+            <p>Changes reflect instantly on the customer ordering app.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="modal-field" style="grid-column:1/-1"><label>Item name *</label><input type="text" id="mm-name" placeholder="Chicken Biryani"></div>
+              <div class="modal-field" style="grid-column:1/-1"><label>Description</label><input type="text" id="mm-desc" placeholder="Slow-cooked basmati with secret spices"></div>
+              <div class="modal-field"><label>Price (₹) *</label><input type="number" id="mm-price" placeholder="199" min="0"></div>
+              <div class="modal-field"><label>Category *</label>
+                <select id="mm-cat">
+                  <option value="biryani">Biryani</option><option value="chicken">Chicken</option>
+                  <option value="veg">Veg</option><option value="snacks">Snacks</option>
+                  <option value="drinks">Drinks</option>
+                </select>
+              </div>
+              <div class="modal-field"><label>Emoji</label><input type="text" id="mm-emoji" placeholder="🍛" maxlength="4"></div>
+              <div class="modal-field"><label>Diet</label>
+                <select id="mm-veg"><option value="true">Veg 🌿</option><option value="false">Non-Veg 🍗</option></select>
+              </div>
+              <div class="modal-field" style="grid-column:1/-1"><label>Image URL (optional)</label><input type="text" id="mm-image" placeholder="https://… or leave blank to use emoji"></div>
+              <div class="modal-field"><label>Stock left (blank = unlimited)</label><input type="number" id="mm-stock" placeholder="e.g. 20" min="0"></div>
+              <div class="modal-field"><label>Status</label>
+                <select id="mm-oos-toggle"><option value="false">Available</option><option value="true">Out of stock</option></select>
+              </div>
+              <div class="modal-field" style="grid-column:1/-1">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="mm-bestseller" style="width:auto;accent-color:var(--accent)">
+                  <span>⭐ Mark as Best Seller (shown with badge to customers)</span>
+                </label>
+              </div>
+            </div>
+            <div class="modal-actions" style="margin-top:8px">
+              <button class="btn-cancel" id="mm-delete-btn" onclick="deleteMenuItem()" style="margin-right:auto;color:var(--red);border-color:var(--red);display:none">Delete</button>
+              <button class="btn-cancel" onclick="closeMenuModal()">Cancel</button>
+              <button class="btn-confirm" onclick="saveMenuItem()">Save item</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="zapfood_supabase.js"></script>
+<script>
+const ADMIN_CREDENTIALS = { id: 'admin@tildabite.com', password: 'Admin@1234' };
+
+function adminLogin(){
+  const id   = document.getElementById('admin-id-input').value.trim().toLowerCase();
+  const pass = document.getElementById('admin-pass-input').value;
+  const errEl = document.getElementById('admin-login-error');
+  if(!id || !pass){ errEl.textContent='Please enter both Admin ID and password.'; errEl.style.display='block'; return; }
+  if(id !== ADMIN_CREDENTIALS.id || pass !== ADMIN_CREDENTIALS.password){
+    errEl.textContent='Invalid Admin ID or password. Access denied.'; errEl.style.display='block';
+    document.getElementById('admin-pass-input').value=''; return;
+  }
+  errEl.style.display='none';
+  document.getElementById('admin-login-screen').style.display='none';
+  document.getElementById('admin-shell').style.display='flex';
+  adminRefreshOrders(); renderRiders(); renderNotifLog(); renderMenuMgmt();
+  setInterval(adminRefreshOrders, 5000);
+  toast('Welcome back, Admin! 👋');
+}
+
+function adminSignOut(){
+  document.getElementById('admin-shell').style.display='none';
+  document.getElementById('admin-login-screen').style.display='flex';
+  document.getElementById('admin-id-input').value='';
+  document.getElementById('admin-pass-input').value='';
+  toast('Signed out');
+}
+
+const RIDERS=[
+  {id:'rider-1',name:'Arjun Patel',phone:'98765 43210',rating:4.8,deliveries:142,orders:0},
+  {id:'rider-2',name:'Priya Singh',phone:'91234 56789',rating:4.6,deliveries:98,orders:0},
+  {id:'rider-3',name:'Ravi Kumar',phone:'99887 76655',rating:4.5,deliveries:201,orders:0},
+];
+let ORDERS=[]; let currentFilter='all'; let assigningOrder=null; let notifLog=[]; let isDark=false;
+
+function loadOrdersFromStore(){ try{ return JSON.parse(localStorage.getItem('tildabite_orders')||'[]'); }catch(e){return [];} }
+function saveOrdersToStore(arr){ localStorage.setItem('tildabite_orders', JSON.stringify(arr)); }
+
+function recomputeRiderOrderCounts(){
+  RIDERS.forEach(r=>{ r.orders = ORDERS.filter(o=>o.rider_id===r.id && o.status==='otw').length; });
+}
+
+function adminRefreshOrders(){
+  const raw = loadOrdersFromStore();
+  ORDERS = raw.map(o=>({id:o.id,customer:o.customer,time:o.time||'—',amount:o.total,status:o.status,rider:o.rider||null,rider_id:o.rider_id||null,otp:o.otp||null,address:o.address||'—',items:o.items||[]}));
+  recomputeRiderOrderCounts();
+  renderAllOrders();renderRecentOrders();updateOverviewStats();renderRiders();
+  if(document.getElementById('view-menu-mgmt')?.classList.contains('active')) renderMenuMgmt();
+}
+
+function statusBadge(s){
+  const map={pending:'<span class="status-badge s-pending"><i class="ti ti-clock" style="font-size:10px"></i>Pending</span>',otw:'<span class="status-badge s-otw"><i class="ti ti-motorbike" style="font-size:10px"></i>Out for delivery</span>',delivered:'<span class="status-badge s-delivered"><i class="ti ti-check" style="font-size:10px"></i>Delivered</span>',cancelled:'<span class="status-badge s-cancelled">Cancelled</span>'};
+  return map[s]||s;
+}
+function actionCell(o){
+  if(o.status==='pending')return '<button class="assign-btn" onclick="openAssign(\''+o.id+'\')"><i class="ti ti-user-plus" style="font-size:12px"></i> Assign rider</button>';
+  if(o.status==='otw')return '<span class="assigned-pill"><i class="ti ti-circle-check" style="font-size:12px"></i>'+o.rider+'</span>';
+  return '<span style="font-size:11px;color:var(--text3)">Completed</span>';
+}
+function renderOrderRows(orders,targetId){
+  document.getElementById(targetId).innerHTML=orders.map(o=>'<div class="table-row" id="row-'+o.id+'"><div class="table-cell order-id-cell">'+o.id+'</div><div class="table-cell" style="overflow:hidden"><div style="font-weight:600;font-size:13px">'+o.customer+'</div><div style="font-size:11px;color:var(--text3)">'+o.time+'</div></div><div class="table-cell">₹'+o.amount+'</div><div class="table-cell">'+statusBadge(o.status)+'</div><div class="table-cell" style="font-size:12px;color:var(--text2)">'+(o.rider||'—')+'</div><div class="table-cell">'+actionCell(o)+'</div></div>').join('');
+}
+function renderRecentOrders(){renderOrderRows(ORDERS.slice(0,5),'recent-orders-body');}
+function renderAllOrders(){ const filtered=currentFilter==='all'?ORDERS:ORDERS.filter(o=>o.status===currentFilter); renderOrderRows(filtered,'all-orders-body'); }
+function filterOrders(f,btn){ currentFilter=f; document.querySelectorAll('#order-filters .filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderAllOrders(); }
+function openAssign(orderId){ assigningOrder=orderId; document.getElementById('modal-order-label').textContent='Assigning rider for '+orderId; populateRiderSelect(); document.getElementById('assign-modal').classList.remove('hidden'); }
+function closeModal(){ document.getElementById('assign-modal').classList.add('hidden'); assigningOrder=null; }
+function confirmAssign(){
+  const sel=document.getElementById('rider-select');
+  if(!sel.value){toast('Select a rider first');return;}
+  const riderId=sel.value; const riderName=sel.options[sel.selectedIndex].text.split(' (')[0];
+  const all=loadOrdersFromStore(); const idx=all.findIndex(x=>x.id===assigningOrder);
+  const assignOtp=String(Math.floor(1000+Math.random()*9000));if(idx>-1){all[idx].status='otw';all[idx].rider=riderName;all[idx].rider_id=riderId;if(!all[idx].otp)all[idx].otp=assignOtp;}
+  saveOrdersToStore(all);
+  const o=ORDERS.find(x=>x.id===assigningOrder); if(o){o.status='otw';o.rider=riderName;o.rider_id=riderId;}
+  recomputeRiderOrderCounts();
+  renderAllOrders();renderRecentOrders();updateOverviewStats();renderRiders(); closeModal();
+  toast('Rider assigned! Customer OTP is visible on their orders page.');
+}
+function populateRiderSelect(){ const sel=document.getElementById('rider-select'); recomputeRiderOrderCounts(); sel.innerHTML='<option value="">Choose a rider...</option>'+RIDERS.map(r=>'<option value="'+r.id+'">'+r.name+' (⭐'+r.rating+')'+(r.orders>0?' — '+r.orders+' active':' — free')+'</option>').join(''); }
+function renderRiders(){ document.getElementById('riders-grid').innerHTML=RIDERS.map(r=>'<div class="rider-card"><div class="rider-avatar">'+r.name.split(' ').map(w=>w[0]).join('')+'</div><div class="rider-name">'+r.name+'</div><div class="rider-phone"><i class="ti ti-phone" style="font-size:12px;margin-right:4px"></i>'+r.phone+'</div><div class="rider-stats"><div class="r-stat"><div class="r-stat-val">'+r.deliveries+'</div><div class="r-stat-label">Deliveries</div></div><div class="r-stat"><div class="r-stat-val">'+r.rating+'</div><div class="r-stat-label">Rating</div></div><div class="r-stat"><div class="r-stat-val">'+r.orders+'</div><div class="r-stat-label">Active</div></div></div><span class="rider-status '+(r.orders>0?'r-busy':'r-available')+'"><i class="ti ti-circle-filled" style="font-size:8px"></i>'+(r.orders>0?r.orders+' order'+(r.orders>1?'s':'')+' in progress':'No active orders')+'</span></div>').join(''); }
+function renderNotifLog(){ const icons={order:'ti-package',promo:'ti-speakerphone',alert:'ti-alert-triangle'}; const cls={order:'ni-order',promo:'ni-promo',alert:'ni-alert'}; document.getElementById('notif-log').innerHTML=notifLog.map(n=>'<div class="notif-item"><div class="notif-icon '+(cls[n.type]||'ni-order')+'"><i class="ti '+(icons[n.type]||'ti-bell')+'" style="font-size:15px"></i></div><div class="notif-content"><h4>'+n.title+'</h4><p>'+n.msg+'</p><p style="margin-top:3px;font-size:11px;color:var(--text3)">To: '+n.target+'</p></div><div class="notif-meta">'+n.time+'</div></div>').join(''); }
+function sendNotification(){ const title=document.getElementById('notif-title').value.trim(); const msg=document.getElementById('notif-msg').value.trim(); const target=document.getElementById('notif-target').value; if(!title||!msg){toast('Fill in title and message');return;} notifLog.unshift({type:'order',title,msg,time:'now',target}); renderNotifLog(); document.getElementById('notif-title').value=''; document.getElementById('notif-msg').value=''; toast('Notification sent!'); }
+// ─── SHARED MENU STORAGE (instantly reflects on customer app) ───
+const MENU_KEY = 'tildabite_menu';
+const DEFAULT_MENU = [
+  {id:1,name:'Chicken Dum Biryani',desc:'Slow-cooked basmati rice with tender chicken & secret spices',price:199,cat:'biryani',emoji:'🍛',veg:false,image:'',stock:null,oos:false,bestseller:true,sold:0,active:true},
+  {id:2,name:'Veg Biryani',desc:'Fragrant basmati with mixed vegetables & caramelised onions',price:149,cat:'biryani',emoji:'🫕',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:3,name:'Mutton Biryani',desc:'Premium mutton slow-cooked in a sealed handi for 3 hours',price:249,cat:'biryani',emoji:'🍛',veg:false,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:4,name:'Chicken Masala & Roti Box',desc:'Thick chicken curry with 4 hot rotis & pickle',price:179,cat:'chicken',emoji:'🍗',veg:false,image:'',stock:null,oos:false,bestseller:true,sold:0,active:true},
+  {id:5,name:'Butter Chicken Box',desc:'Creamy tomato-based curry with tandoori chicken pieces',price:189,cat:'chicken',emoji:'🍗',veg:false,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:6,name:'Chhole Bhature',desc:'Punjabi chhole with 2 fluffy bhaturas & onion rings',price:129,cat:'veg',emoji:'🫘',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:7,name:'Paneer Tikka Box',desc:'Smoky marinated paneer with mint chutney & roti',price:159,cat:'veg',emoji:'🧀',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:8,name:'Burger (Veg)',desc:'Crispy aloo tikki burger with chipotle mayo & fresh veggies',price:89,cat:'snacks',emoji:'🍔',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:9,name:'Cold Coffee',desc:'Rich cold brew with milk & vanilla ice cream',price:79,cat:'drinks',emoji:'☕',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+  {id:10,name:'Mojito (Mint)',desc:'Fresh mint, lime & soda – refreshingly light',price:69,cat:'drinks',emoji:'🍹',veg:true,image:'',stock:null,oos:false,bestseller:false,sold:0,active:true},
+];
+let MENU_ITEMS = [];
+let editingMenuId = null;
+
+function loadMenu(){
+  try { const raw = JSON.parse(localStorage.getItem(MENU_KEY)||'null'); if(Array.isArray(raw)&&raw.length){ MENU_ITEMS = raw; return; } } catch(e){}
+  MENU_ITEMS = JSON.parse(JSON.stringify(DEFAULT_MENU));
+  saveMenu();
+}
+function saveMenu(){ localStorage.setItem(MENU_KEY, JSON.stringify(MENU_ITEMS)); }
+
+// Auto-decrement stock based on placed orders so admin sees live availability
+function syncStockFromOrders(){
+  const orders = loadOrdersFromStore();
+  const processed = new Set(JSON.parse(localStorage.getItem('tildabite_menu_processed_orders')||'[]'));
+  let changed = false;
+  orders.forEach(o=>{
+    if(processed.has(o.id) || o.status==='cancelled') return;
+    (o.items||[]).forEach(line=>{
+      // line is "Item Name ×N"
+      const m = String(line).match(/^(.*) ×(\d+)$/);
+      if(!m) return;
+      const name = m[1], qty = parseInt(m[2]);
+      const item = MENU_ITEMS.find(x=>x.name===name);
+      if(!item) return;
+      item.sold = (item.sold||0) + qty;
+      if(typeof item.stock === 'number'){
+        item.stock = Math.max(0, item.stock - qty);
+        if(item.stock === 0) item.oos = true;
+      }
+      changed = true;
+    });
+    processed.add(o.id);
+  });
+  if(changed){ saveMenu(); localStorage.setItem('tildabite_menu_processed_orders', JSON.stringify([...processed])); }
+}
+
+function renderMenuMgmt(){
+  loadMenu(); syncStockFromOrders();
+  const q = (document.getElementById('mm-search')?.value||'').toLowerCase();
+  const list = MENU_ITEMS.filter(m => !q || m.name.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q));
+  // stats
+  const inStock = MENU_ITEMS.filter(m=>!m.oos && m.active).length;
+  const fewLeft = MENU_ITEMS.filter(m=>!m.oos && typeof m.stock==='number' && m.stock>0 && m.stock<=5).length;
+  const oos     = MENU_ITEMS.filter(m=>m.oos || (typeof m.stock==='number' && m.stock===0)).length;
+  document.getElementById('mm-total').textContent = MENU_ITEMS.length;
+  document.getElementById('mm-instock').textContent = inStock;
+  document.getElementById('mm-fewleft').textContent = fewLeft;
+  document.getElementById('mm-oos').textContent = oos;
+
+  document.getElementById('menu-items-list').innerHTML = list.map(m=>{
+    const stockTxt = (typeof m.stock==='number')
+      ? (m.stock===0 ? '<span style="color:var(--red);font-weight:700">0 left</span>'
+        : m.stock<=5 ? '<span style="color:var(--amber);font-weight:700">Only '+m.stock+' left</span>'
+        : m.stock+' in stock')
+      : '<span style="color:var(--text3)">Unlimited</span>';
+    const statusBadge = m.oos
+      ? '<span style="padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--rbg);color:var(--red);border:1px solid var(--rborder)">OUT OF STOCK</span>'
+      : (typeof m.stock==='number' && m.stock>0 && m.stock<=5)
+        ? '<span style="padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--ambg);color:var(--amber);border:1px solid var(--amborder)">FEW LEFT</span>'
+        : '<span style="padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--gbg);color:var(--green);border:1px solid var(--gborder)">AVAILABLE</span>';
+    const bestseller = m.bestseller ? '<span style="padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,158,11,0.12);color:#b45309;border:1px solid rgba(245,158,11,0.3);margin-left:4px">⭐ BEST SELLER</span>' : '';
+    const img = m.image
+      ? `<img src="${m.image}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--card)">`
+      : `<div style="width:48px;height:48px;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:26px">${m.emoji||'🍽️'}</div>`;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)">
+      ${img}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${m.name} ${bestseller}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${m.cat} · ${m.veg?'Veg':'Non-Veg'} · Sold: ${m.sold||0}</div>
+      </div>
+      <div style="font-size:12px;width:110px;text-align:right">${stockTxt}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--accent);width:60px;text-align:right">₹${m.price}</div>
+      <div style="width:120px;text-align:center">${statusBadge}</div>
+      <button class="tb-btn" onclick="openMenuEditor(${m.id})" style="padding:5px 12px;font-size:11px"><i class="ti ti-edit" style="font-size:12px"></i> Edit</button>
+    </div>`;
+  }).join('') || '<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">No items match your search.</div>';
+}
+
+function openMenuEditor(id){
+  loadMenu();
+  editingMenuId = id;
+  const m = id ? MENU_ITEMS.find(x=>x.id===id) : {name:'',desc:'',price:'',cat:'biryani',emoji:'🍽️',veg:true,image:'',stock:'',oos:false,bestseller:false};
+  if(!m) return;
+  document.getElementById('menu-modal-title').textContent = id ? 'Edit menu item' : 'Add menu item';
+  document.getElementById('mm-name').value = m.name||'';
+  document.getElementById('mm-desc').value = m.desc||'';
+  document.getElementById('mm-price').value = m.price||'';
+  document.getElementById('mm-cat').value = m.cat||'biryani';
+  document.getElementById('mm-emoji').value = m.emoji||'';
+  document.getElementById('mm-veg').value = String(!!m.veg);
+  document.getElementById('mm-image').value = m.image||'';
+  document.getElementById('mm-stock').value = (typeof m.stock==='number') ? m.stock : '';
+  document.getElementById('mm-oos-toggle').value = String(!!m.oos);
+  document.getElementById('mm-bestseller').checked = !!m.bestseller;
+  document.getElementById('mm-delete-btn').style.display = id ? 'inline-block' : 'none';
+  document.getElementById('menu-modal').classList.remove('hidden');
+}
+function closeMenuModal(){ document.getElementById('menu-modal').classList.add('hidden'); editingMenuId = null; }
+
+function saveMenuItem(){
+  const name = document.getElementById('mm-name').value.trim();
+  const price = parseInt(document.getElementById('mm-price').value);
+  if(!name){ toast('Item name is required'); return; }
+  if(isNaN(price) || price<0){ toast('Enter a valid price'); return; }
+  const stockRaw = document.getElementById('mm-stock').value.trim();
+  const stock = stockRaw==='' ? null : Math.max(0, parseInt(stockRaw));
+  let oos = document.getElementById('mm-oos-toggle').value === 'true';
+  if(stock === 0) oos = true;
+  const payload = {
+    name, desc: document.getElementById('mm-desc').value.trim(),
+    price, cat: document.getElementById('mm-cat').value,
+    emoji: document.getElementById('mm-emoji').value.trim() || '🍽️',
+    veg: document.getElementById('mm-veg').value === 'true',
+    image: document.getElementById('mm-image').value.trim(),
+    stock, oos, bestseller: document.getElementById('mm-bestseller').checked,
+    active: true,
+  };
+  loadMenu();
+  if(editingMenuId){
+    const i = MENU_ITEMS.findIndex(x=>x.id===editingMenuId);
+    if(i>-1) MENU_ITEMS[i] = { ...MENU_ITEMS[i], ...payload };
+    toast('Item updated — live on customer app ✓');
+  } else {
+    const newId = (MENU_ITEMS.reduce((a,m)=>Math.max(a,m.id),0)||0) + 1;
+    MENU_ITEMS.push({ id:newId, sold:0, ...payload });
+    toast('Item added — live on customer app ✓');
+  }
+  saveMenu(); closeMenuModal(); renderMenuMgmt();
+}
+function deleteMenuItem(){
+  if(!editingMenuId) return;
+  if(!confirm('Delete this item? Customers will no longer see it.')) return;
+  loadMenu();
+  MENU_ITEMS = MENU_ITEMS.filter(x=>x.id!==editingMenuId);
+  saveMenu(); closeMenuModal(); renderMenuMgmt();
+  toast('Item deleted');
+}
+
+// Cross-tab live sync — admin changes show on customer tab and vice versa
+window.addEventListener('storage', e => {
+  if(e.key === MENU_KEY) renderMenuMgmt();
+  if(e.key === 'tildabite_orders') adminRefreshOrders();
+});
+
+function showView(v,btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const titles={overview:'Overview',orders:'All orders',riders:'Riders',notifications:'Notifications','menu-mgmt':'Menu management'};
+  document.getElementById('page-title').textContent=titles[v]||v;
+  if(btn){document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+let tTimer;
+function toast(msg){ clearTimeout(tTimer); document.getElementById('tmsg').textContent=msg; document.getElementById('toast').classList.add('show'); tTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),2400); }
+function toggleTheme(){ isDark=!isDark; document.body.classList.toggle('dark',isDark); document.getElementById('theme-icon').className=isDark?'ti ti-sun':'ti ti-moon'; }
+function updateOverviewStats(){ const pending=ORDERS.filter(x=>x.status==='pending').length; const total=ORDERS.length; const revenue=ORDERS.filter(x=>x.status!=='cancelled').reduce((s,o)=>s+o.amount,0); const activeRiders=RIDERS.filter(r=>r.orders>0).length; document.getElementById('ov-pending').textContent=pending; document.getElementById('ov-total').textContent=total; document.getElementById('ov-revenue').textContent='₹'+revenue.toLocaleString('en-IN'); document.getElementById('ov-riders').textContent=activeRiders; document.getElementById('pending-badge').textContent=pending; }
+</script>
+</html>
