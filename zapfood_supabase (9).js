@@ -4,8 +4,8 @@
 // ============================================================
 
 // ─── CONFIG ─────────────────────────────────────────────────
-const SUPABASE_URL  = 'https://xxqctsfrnynrfoldnahw.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4cWN0c2ZybnlucmZvbGRuYWh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MTU5NjgsImV4cCI6MjA5NzM5MTk2OH0.9NbsyMz0Hfkb1KFbvStn6hUMRtRw9RJd9FTuiHOpsG8';
+const SUPABASE_URL  = 'https://adrswghozchfbazwfnzr.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkcnN3Z2hvemNoZmJhendmbnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTc5MzcsImV4cCI6MjA5ODQ5MzkzN30.VAKnkX_bmESeQsKtpphVc7zpxdiLNZslofcmc3mWMMc';
 
 // Add this CDN in <head> of every HTML file:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
