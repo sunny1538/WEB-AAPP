@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZapFood — Hyderabadi Chicken Biryani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#1B140F;
+    --card:#241A12;
+    --card-2:#2E2116;
+    --cream:#F3E6CE;
+    --cream-dim:#C9B99B;
+    --saffron:#E8A33D;
+    --chili:#C1121F;
+    --border:#4A3423;
+    --green:#5FA35A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% -10%, #33241533 0%, transparent 45%),
+      radial-gradient(circle at 85% 110%, #33241540 0%, transparent 45%),
+      var(--bg);
+    color:var(--cream);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .stage{
+    width:100%;
+    max-width:420px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--cream);
+  }
+  .brand h1 span{color:var(--saffron);}
+  .live-pill{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--cream-dim);
+    letter-spacing:0.03em;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 0 0 rgba(95,163,90,0.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(95,163,90,0.5);}
+    70%{box-shadow:0 0 0 6px rgba(95,163,90,0);}
+    100%{box-shadow:0 0 0 0 rgba(95,163,90,0);}
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card + .card{margin-top:16px;}
+
+  /* ---- Product ticket ---- */
+  .ticket{
+    background:linear-gradient(160deg, var(--card-2), var(--card));
+  }
+  .ticket-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.08em;
+    color:var(--chili);
+    border:1px solid var(--chili);
+    padding:3px 7px;
+    border-radius:999px;
+    text-transform:uppercase;
+  }
+  .dish-emoji{font-size:44px;line-height:1;margin:10px 0 6px;}
+  .dish-name{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:23px;
+    margin:0 0 4px;
+    color:var(--cream);
+  }
+  .dish-desc{
+    font-size:13.5px;
+    color:var(--cream-dim);
+    line-height:1.5;
+    margin:0 0 16px;
+  }
+  .price-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-top:1px dashed var(--border);
+    padding-top:14px;
+  }
+  .price{
+    font-family:'JetBrains Mono', monospace;
+    font-size:20px;
+    font-weight:600;
+    color:var(--saffron);
+  }
+  .price sup{font-size:12px;opacity:0.8;}
+  .qty-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:4px 10px;
+  }
+  .qty-controls button{
+    background:none;border:none;color:var(--cream);
+    font-size:16px;cursor:pointer;width:20px;
+  }
+  .qty-controls span{font-family:'JetBrains Mono',monospace;min-width:14px;text-align:center;}
+
+  .btn{
+    width:100%;
+    margin-top:16px;
+    padding:13px;
+    border:none;
+    border-radius:9px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--chili); color:#fff;}
+  .btn-primary:hover{opacity:0.92;}
+  .btn-ghost{
+    background:transparent;
+    color:var(--cream-dim);
+    border:1px solid var(--border);
+  }
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* ---- Auth ---- */
+  .tabs{display:flex;gap:6px;margin-bottom:16px;}
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:9px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--cream-dim);
+    border:1px solid transparent;
+  }
+  .tab.active{
+    background:var(--card-2);
+    color:var(--saffron);
+    border-color:var(--border);
+  }
+  label{
+    display:block;
+    font-size:11.5px;
+    color:var(--cream-dim);
+    margin:12px 0 5px;
+    letter-spacing:0.02em;
+  }
+  input{
+    width:100%;
+    padding:11px 12px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+  }
+  input:focus{outline:2px solid var(--saffron); outline-offset:1px;}
+  .error-msg{
+    color:var(--chili);
+    font-size:12.5px;
+    margin-top:10px;
+    min-height:0;
+  }
+  .hint{
+    font-size:11.5px;
+    color:var(--cream-dim);
+    margin-top:10px;
+    text-align:center;
+  }
+
+  /* ---- Order status ---- */
+  .stepper{
+    display:flex;
+    justify-content:space-between;
+    margin:18px 0 4px;
+    position:relative;
+  }
+  .stepper::before{
+    content:'';
+    position:absolute;
+    top:9px; left:16px; right:16px;
+    height:2px;
+    background:var(--border);
+    z-index:0;
+  }
+  .step{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    flex:1;
+  }
+  .step .node{
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--card-2);
+    border:2px solid var(--border);
+  }
+  .step.done .node{background:var(--saffron); border-color:var(--saffron);}
+  .step.current .node{
+    background:var(--chili); border-color:var(--chili);
+    box-shadow:0 0 0 4px rgba(193,18,31,0.2);
+  }
+  .step small{
+    font-size:10px;
+    color:var(--cream-dim);
+    text-align:center;
+    letter-spacing:0.02em;
+  }
+  .step.done small, .step.current small{color:var(--cream);}
+
+  .signout{
+    display:block;
+    text-align:center;
+    margin-top:14px;
+    font-size:12px;
+    color:var(--cream-dim);
+    cursor:pointer;
+    text-decoration:underline;
+  }
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="brand">
+    <h1>Zap<span>Food</span></h1>
+    <div class="live-pill"><span class="dot"></span>LIVE KITCHEN</div>
+  </div>
+
+  <!-- AUTH CARD -->
+  <div class="card" id="authCard">
+    <div class="tabs">
+      <div class="tab active" id="tabLogin">Log in</div>
+      <div class="tab" id="tabSignup">Sign up</div>
+    </div>
+
+    <div id="signupNameWrap" class="hidden">
+      <label>Full name</label>
+      <input type="text" id="fullName" placeholder="Aarav Shah" autocomplete="name">
+    </div>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+
+    <button class="btn btn-primary" id="authSubmit">Log in</button>
+    <div class="error-msg" id="authError"></div>
+    <div class="hint" id="authHint"></div>
+  </div>
+
+  <!-- APP CARD (shown after login) -->
+  <div class="card ticket hidden" id="appCard">
+    <div class="ticket-top">
+      <span class="badge">Chef's Pick</span>
+      <span class="badge" style="color:var(--saffron);border-color:var(--saffron);">₹ Best Value</span>
+    </div>
+    <div class="dish-emoji">🍛</div>
+    <h2 class="dish-name">Hyderabadi Chicken Biryani</h2>
+    <p class="dish-desc">Slow-dum-cooked basmati, hand-pounded spices, fried onions, served with mirchi ka salan &amp; raita.</p>
+
+    <div class="price-row">
+      <div class="price"><sup>₹</sup>249</div>
+      <div class="qty-controls">
+        <button id="qtyMinus">−</button>
+        <span id="qtyVal">1</span>
+        <button id="qtyPlus">+</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="orderBtn">Place order — ₹249</button>
+  </div>
+
+  <!-- ORDER STATUS CARD -->
+  <div class="card hidden" id="statusCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <strong style="font-family:'Fraunces',serif;font-size:16px;">Order status</strong>
+      <span class="badge" id="orderIdBadge">—</span>
+    </div>
+    <div class="stepper">
+      <div class="step" id="s-placed"><div class="node"></div><small>Placed</small></div>
+      <div class="step" id="s-preparing"><div class="node"></div><small>Preparing</small></div>
+      <div class="step" id="s-otw"><div class="node"></div><small>On the way</small></div>
+      <div class="step" id="s-delivered"><div class="node"></div><small>Delivered</small></div>
+    </div>
+    <div class="hint" id="statusHint" style="margin-top:12px;">Updates live — no refresh needed.</div>
+  </div>
+
+  <span class="signout hidden" id="signoutBtn">Sign out</span>
+</div>
+
+<script>
+const SUPABASE_URL = "https://aoamlgamtpmcjchbxtxy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Y6KKaDPew8VWHolwumkNPA_MFlhvce0";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const PRODUCT_PRICE = 249;
+let mode = "login"; // or "signup"
+let qty = 1;
+let orderChannel = null;
+let currentOrderId = null;
+
+const el = id => document.getElementById(id);
+
+// ---------- Tabs ----------
+el("tabLogin").onclick = () => setMode("login");
+el("tabSignup").onclick = () => setMode("signup");
+
+function setMode(m){
+  mode = m;
+  el("tabLogin").classList.toggle("active", m === "login");
+  el("tabSignup").classList.toggle("active", m === "signup");
+  el("signupNameWrap").classList.toggle("hidden", m !== "signup");
+  el("authSubmit").textContent = m === "login" ? "Log in" : "Create account";
+  el("authError").textContent = "";
+  el("authHint").textContent = "";
+}
+
+// ---------- Auth submit ----------
+el("authSubmit").onclick = async () => {
+  const email = el("email").value.trim();
+  const password = el("password").value;
+  el("authError").textContent = "";
+
+  if(!email || !password){
+    el("authError").textContent = "Enter your email and password.";
+    return;
+  }
+
+  el("authSubmit").disabled = true;
+  el("authSubmit").textContent = "Please wait…";
+
+  if(mode === "signup"){
+    const fullName = el("fullName").value.trim();
+    const { data, error } = await sb.auth.signUp({
+      email, password,
+      options: { data: { full_name: fullName } }
+    });
+    if(error){
+      el("authError").textContent = error.message;
+    } else if(data.user && !data.session){
+      el("authHint").textContent = "Check your email to confirm your account, then log in.";
+      setMode("login");
+    }
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error) el("authError").textContent = error.message;
+  }
+
+  el("authSubmit").disabled = false;
+  el("authSubmit").textContent = mode === "login" ? "Log in" : "Create account";
+};
+
+// ---------- Qty controls ----------
+el("qtyPlus").onclick = () => { qty = Math.min(qty+1, 9); renderQty(); };
+el("qtyMinus").onclick = () => { qty = Math.max(qty-1, 1); renderQty(); };
+function renderQty(){
+  el("qtyVal").textContent = qty;
+  el("orderBtn").textContent = `Place order — ₹${qty*PRODUCT_PRICE}`;
+}
+
+// ---------- Place order ----------
+el("orderBtn").onclick = async () => {
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return;
+
+  el("orderBtn").disabled = true;
+  el("orderBtn").textContent = "Placing order…";
+
+  const { data, error } = await sb
+    .from("orders")
+    .insert({ user_id: user.id, qty, total: qty*PRODUCT_PRICE })
+    .select()
+    .single();
+
+  el("orderBtn").disabled = false;
+  renderQty();
+
+  if(error){
+    alert("Could not place order: " + error.message);
+    return;
+  }
+
+  currentOrderId = data.id;
+  showOrderStatus(data);
+  subscribeToOrder(user.id);
+};
+
+// ---------- Order status rendering ----------
+const STEPS = ["placed","preparing","otw","delivered"];
+function showOrderStatus(order){
+  el("statusCard").classList.remove("hidden");
+  el("orderIdBadge").textContent = "#" + order.id.slice(0,8);
+  const idx = STEPS.indexOf(order.status);
+  STEPS.forEach((s,i) => {
+    const node = el("s-"+s);
+    node.classList.remove("done","current");
+    if(i < idx) node.classList.add("done");
+    if(i === idx) node.classList.add("current");
+  });
+  el("statusHint").textContent = order.status === "delivered"
+    ? "Delivered — enjoy! 🎉"
+    : "Updates live — no refresh needed.";
+}
+
+// ---------- Realtime subscription ----------
+function subscribeToOrder(userId){
+  if(orderChannel) sb.removeChannel(orderChannel);
+  orderChannel = sb
+    .channel("orders-" + userId)
+    .on("postgres_changes",
+      { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${userId}` },
+      (payload) => {
+        if(payload.new && payload.new.id === currentOrderId){
+          showOrderStatus(payload.new);
+        }
+      }
+    )
+    .subscribe();
+}
+
+// ---------- Fetch most recent order on load ----------
+async function loadLatestOrder(userId){
+  const { data } = await sb
+    .from("orders")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending:false })
+    .limit(1)
+    .maybeSingle();
+  if(data && data.status !== "delivered" && data.status !== "cancelled"){
+    currentOrderId = data.id;
+    showOrderStatus(data);
+  }
+  subscribeToOrder(userId);
+}
+
+// ---------- Sign out ----------
+el("signoutBtn").onclick = async () => {
+  await sb.auth.signOut();
+};
+
+// ---------- Auth state ----------
+sb.auth.onAuthStateChange((event, session) => {
+  if(session && session.user){
+    el("authCard").classList.add("hidden");
+    el("appCard").classList.remove("hidden");
+    el("signoutBtn").classList.remove("hidden");
+    loadLatestOrder(session.user.id);
+  } else {
+    el("authCard").classList.remove("hidden");
+    el("appCard").classList.add("hidden");
+    el("statusCard").classList.add("hidden");
+    el("signoutBtn").classList.add("hidden");
+    if(orderChannel){ sb.removeChannel(orderChannel); orderChannel = null; }
+  }
+});
+</script>
+
+</body>
+</html>
