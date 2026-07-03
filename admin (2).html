@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZapFood — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#1B140F;
+    --card:#241A12;
+    --card-2:#2E2116;
+    --cream:#F3E6CE;
+    --cream-dim:#C9B99B;
+    --saffron:#E8A33D;
+    --chili:#C1121F;
+    --border:#4A3423;
+    --green:#5FA35A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% -10%, #33241533 0%, transparent 45%),
+      radial-gradient(circle at 85% 110%, #33241540 0%, transparent 45%),
+      var(--bg);
+    color:var(--cream);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    padding:32px 16px;
+  }
+  .stage{ width:100%; max-width:900px; margin:0 auto; }
+  .brand{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .brand h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:26px;
+    letter-spacing:-0.01em; margin:0; color:var(--cream);
+  }
+  .brand h1 span{color:var(--saffron);}
+  .live-pill{
+    display:flex; align-items:center; gap:6px;
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    color:var(--cream-dim); letter-spacing:0.03em;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%; background:var(--green);
+    box-shadow:0 0 0 0 rgba(95,163,90,0.6); animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(95,163,90,0.5);}
+    70%{box-shadow:0 0 0 6px rgba(95,163,90,0);}
+    100%{box-shadow:0 0 0 0 rgba(95,163,90,0);}
+  }
+
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:22px; position:relative; overflow:hidden;
+  }
+  .card + .card{margin-top:16px;}
+
+  /* auth card reused styling */
+  .auth-wrap{max-width:420px; margin:0 auto;}
+  label{ display:block; font-size:11.5px; color:var(--cream-dim); margin:12px 0 5px; letter-spacing:0.02em; }
+  input{
+    width:100%; padding:11px 12px; background:var(--bg);
+    border:1px solid var(--border); border-radius:8px; color:var(--cream);
+    font-family:'Work Sans', sans-serif; font-size:14px;
+  }
+  input:focus{outline:2px solid var(--saffron); outline-offset:1px;}
+  .btn{
+    padding:11px 16px; border:none; border-radius:9px;
+    font-family:'Work Sans', sans-serif; font-weight:600; font-size:13.5px;
+    cursor:pointer; transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--chili); color:#fff; width:100%; margin-top:16px; padding:13px;}
+  .btn-primary:hover{opacity:0.92;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .error-msg{ color:var(--chili); font-size:12.5px; margin-top:10px; min-height:0; }
+  .hint{ font-size:11.5px; color:var(--cream-dim); margin-top:10px; text-align:center; }
+
+  /* order list */
+  .filters{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .filter-chip{
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    padding:6px 12px; border-radius:999px; border:1px solid var(--border);
+    color:var(--cream-dim); cursor:pointer; text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .filter-chip.active{ background:var(--card-2); color:var(--saffron); border-color:var(--saffron); }
+
+  .order-row{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:16px; margin-bottom:12px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .order-left{ min-width:180px; }
+  .order-id{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cream-dim); }
+  .order-customer{ font-family:'Fraunces', serif; font-weight:700; font-size:16px; margin:2px 0; }
+  .order-meta{ font-size:12.5px; color:var(--cream-dim); }
+  .status-badge{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:4px 9px; border-radius:999px; text-transform:uppercase; white-space:nowrap;
+    border:1px solid var(--border);
+  }
+  .status-placed{ color:var(--cream-dim); }
+  .status-preparing{ color:var(--saffron); border-color:var(--saffron); }
+  .status-otw{ color:#7DB8E8; border-color:#7DB8E8; }
+  .status-delivered{ color:var(--green); border-color:var(--green); }
+  .status-cancelled{ color:var(--chili); border-color:var(--chili); }
+
+  .order-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-next{ background:var(--chili); color:#fff; }
+  .btn-cancel{ background:transparent; color:var(--cream-dim); border:1px solid var(--border); }
+
+  .empty-state{ text-align:center; padding:40px 20px; color:var(--cream-dim); font-size:13.5px; }
+  .signout{ display:block; text-align:center; margin-top:18px; font-size:12px; color:var(--cream-dim); cursor:pointer; text-decoration:underline; }
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="brand">
+    <h1>Zap<span>Food</span> Admin</h1>
+    <div class="live-pill"><span class="dot"></span>LIVE</div>
+  </div>
+
+  <!-- AUTH -->
+  <div class="card auth-wrap" id="authCard">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="admin@example.com" autocomplete="email">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn btn-primary" id="authSubmit">Log in</button>
+    <div class="error-msg" id="authError"></div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="ordersWrap" class="hidden">
+    <div class="filters">
+      <div class="filter-chip active" data-filter="active">Active</div>
+      <div class="filter-chip" data-filter="placed">Placed</div>
+      <div class="filter-chip" data-filter="preparing">Preparing</div>
+      <div class="filter-chip" data-filter="otw">On the way</div>
+      <div class="filter-chip" data-filter="delivered">Delivered</div>
+      <div class="filter-chip" data-filter="cancelled">Cancelled</div>
+      <div class="filter-chip" data-filter="all">All</div>
+    </div>
+    <div id="orderList"></div>
+    <span class="signout" id="signoutBtn">Sign out</span>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://aoamlgamtpmcjchbxtxy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Y6KKaDPew8VWHolwumkNPA_MFlhvce0";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const el = id => document.getElementById(id);
+let allOrders = [];
+let currentFilter = "active";
+let ordersChannel = null;
+
+const NEXT_STATUS = { placed: "preparing", preparing: "otw", otw: "delivered" };
+const NEXT_LABEL = { placed: "Start preparing", preparing: "Out for delivery", otw: "Mark delivered" };
+
+// ---------- Auth ----------
+el("authSubmit").onclick = async () => {
+  const email = el("email").value.trim();
+  const password = el("password").value;
+  el("authError").textContent = "";
+  if(!email || !password){
+    el("authError").textContent = "Enter email and password.";
+    return;
+  }
+  el("authSubmit").disabled = true;
+  el("authSubmit").textContent = "Please wait…";
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error) el("authError").textContent = error.message;
+  el("authSubmit").disabled = false;
+  el("authSubmit").textContent = "Log in";
+};
+
+el("signoutBtn").onclick = async () => { await sb.auth.signOut(); };
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(session && session.user){
+    // check is_admin
+    const { data: profile, error } = await sb
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .single();
+
+    if(error || !profile || !profile.is_admin){
+      el("authError").textContent = "This account is not an admin.";
+      await sb.auth.signOut();
+      return;
+    }
+
+    el("authCard").classList.add("hidden");
+    el("ordersWrap").classList.remove("hidden");
+    loadOrders();
+    subscribeToAllOrders();
+  } else {
+    el("authCard").classList.remove("hidden");
+    el("ordersWrap").classList.add("hidden");
+    if(ordersChannel){ sb.removeChannel(ordersChannel); ordersChannel = null; }
+  }
+});
+
+// ---------- Filters ----------
+document.querySelectorAll(".filter-chip").forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    currentFilter = chip.dataset.filter;
+    renderOrders();
+  };
+});
+
+// ---------- Load orders ----------
+async function loadOrders(){
+  const { data, error } = await sb
+    .from("orders")
+    .select("*, profiles(full_name, email)")
+    .order("created_at", { ascending: false });
+
+  if(error){
+    el("orderList").innerHTML = `<div class="empty-state">Could not load orders: ${error.message}</div>`;
+    return;
+  }
+  allOrders = data || [];
+  renderOrders();
+}
+
+// ---------- Render ----------
+function renderOrders(){
+  let list = allOrders;
+  if(currentFilter === "active"){
+    list = list.filter(o => o.status !== "delivered" && o.status !== "cancelled");
+  } else if(currentFilter !== "all"){
+    list = list.filter(o => o.status === currentFilter);
+  }
+
+  if(list.length === 0){
+    el("orderList").innerHTML = `<div class="empty-state">No orders here.</div>`;
+    return;
+  }
+
+  el("orderList").innerHTML = list.map(o => {
+    const name = o.profiles?.full_name || o.profiles?.email || "Customer";
+    const time = new Date(o.created_at).toLocaleString();
+    const nextStatus = NEXT_STATUS[o.status];
+    const nextLabel = NEXT_LABEL[o.status];
+    const canCancel = o.status === "placed" || o.status === "preparing";
+
+    return `
+      <div class="order-row" data-id="${o.id}">
+        <div class="order-left">
+          <div class="order-id">#${o.id.slice(0,8)} · ${time}</div>
+          <div class="order-customer">${escapeHtml(name)}</div>
+          <div class="order-meta">Qty ${o.qty} · ₹${o.total} · Biryani</div>
+        </div>
+        <span class="status-badge status-${o.status}">${o.status}</span>
+        <div class="order-actions">
+          ${nextStatus ? `<button class="btn btn-next" data-action="next" data-id="${o.id}" data-next="${nextStatus}">${nextLabel}</button>` : ""}
+          ${canCancel ? `<button class="btn btn-cancel" data-action="cancel" data-id="${o.id}">Cancel</button>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // wire up buttons
+  el("orderList").querySelectorAll("button[data-action]").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if(action === "next") updateStatus(id, btn.dataset.next);
+      if(action === "cancel") updateStatus(id, "cancelled");
+    };
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ---------- Update status ----------
+async function updateStatus(orderId, newStatus){
+  const { error } = await sb
+    .from("orders")
+    .update({ status: newStatus })
+    .eq("id", orderId);
+  if(error) alert("Could not update order: " + error.message);
+  // no need to manually reload — realtime subscription will refresh it
+}
+
+// ---------- Realtime: all orders ----------
+function subscribeToAllOrders(){
+  if(ordersChannel) sb.removeChannel(ordersChannel);
+  ordersChannel = sb
+    .channel("admin-orders")
+    .on("postgres_changes",
+      { event: "*", schema: "public", table: "orders" },
+      (payload) => {
+        if(payload.eventType === "INSERT"){
+          allOrders.unshift(payload.new);
+        } else if(payload.eventType === "UPDATE"){
+          const idx = allOrders.findIndex(o => o.id === payload.new.id);
+          if(idx > -1) allOrders[idx] = { ...allOrders[idx], ...payload.new };
+        } else if(payload.eventType === "DELETE"){
+          allOrders = allOrders.filter(o => o.id !== payload.old.id);
+        }
+        renderOrders();
+      }
+    )
+    .subscribe();
+}
+</script>
+
+</body>
+</html>
